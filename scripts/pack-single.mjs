@@ -12,12 +12,14 @@ let bundle = readFileSync(`${dist}${entryMatch[1]}`, 'utf8')
 
 /* Inline only the fonts the app loads at runtime. */
 const usedFonts = [
-  'Inter_400Regular.',
-  'Inter_500Medium.',
-  'Inter_600SemiBold.',
-  'Inter_700Bold.',
-  'Inter_800ExtraBold.',
-  'Fraunces_400Regular_Italic.',
+  'Archivo_400Regular.',
+  'Archivo_500Medium.',
+  'Archivo_500Medium_Italic.',
+  'Archivo_600SemiBold.',
+  'Archivo_700Bold.',
+  'Archivo_800ExtraBold.',
+  'Archivo_800ExtraBold_Italic.',
+  'Archivo_900Black.',
 ]
 const fontRefs = [...bundle.matchAll(/"(\/assets\/[^"]+\.ttf)"/g)].map((m) => m[1])
 let inlined = 0
