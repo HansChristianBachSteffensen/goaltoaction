@@ -98,7 +98,6 @@ export const font = {
   medium: 'Inter_500Medium',
   semibold: 'Inter_600SemiBold',
   bold: 'Inter_700Bold',
-  extrabold: 'Inter_800ExtraBold',
   editorial: 'Fraunces_400Regular_Italic',
 }
 
