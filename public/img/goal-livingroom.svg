@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a221a"/>
+      <stop offset="0.6" stop-color="#4a3a2a"/>
+      <stop offset="1" stop-color="#1c1712"/>
+    </linearGradient>
+    <radialGradient id="lampglow" cx="0.72" cy="0.42" r="0.5">
+      <stop offset="0" stop-color="#ffd9a0" stop-opacity="0.75"/>
+      <stop offset="0.4" stop-color="#e8a860" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#e8a860" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="grain3">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0.55 0.55 0.55 0 0"/>
+      <feComposite operator="over" in2="SourceGraphic"/>
+    </filter>
+  </defs>
+  <g filter="url(#grain3)">
+    <rect width="1600" height="900" fill="url(#wall)"/>
+    <rect width="1600" height="900" fill="url(#lampglow)"/>
+    <ellipse cx="1152" cy="330" rx="66" ry="40" fill="#0f0c09"/>
+    <rect x="1148" y="366" width="8" height="300" fill="#0f0c09"/>
+    <path d="M1030 666 h250" stroke="#0f0c09" stroke-width="10" stroke-linecap="round"/>
+    <rect x="270" y="560" width="520" height="150" rx="26" fill="#141009"/>
+    <rect x="250" y="530" width="90" height="180" rx="26" fill="#171209"/>
+    <rect x="710" y="530" width="90" height="180" rx="26" fill="#171209"/>
+    <rect x="0" y="710" width="1600" height="190" fill="#0d0a07"/>
+    <ellipse cx="640" cy="770" rx="420" ry="34" fill="#241a10"/>
+  </g>
+</svg>

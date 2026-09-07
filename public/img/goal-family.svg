@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="field" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c9b98a"/>
+      <stop offset="0.45" stop-color="#a58f5c"/>
+      <stop offset="0.72" stop-color="#5c5433"/>
+      <stop offset="1" stop-color="#23200f"/>
+    </linearGradient>
+    <radialGradient id="haze" cx="0.5" cy="0.3" r="0.6">
+      <stop offset="0" stop-color="#f7ecc8" stop-opacity="0.8"/>
+      <stop offset="1" stop-color="#f7ecc8" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="grain4">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0.5 0.5 0.5 0 0"/>
+      <feComposite operator="over" in2="SourceGraphic"/>
+    </filter>
+  </defs>
+  <g filter="url(#grain4)">
+    <rect width="1600" height="900" fill="url(#field)"/>
+    <rect width="1600" height="900" fill="url(#haze)"/>
+    <path d="M708 900 l14 -180 a9 9 0 0 1 18 0 l8 74 l8 -50 a8 8 0 0 1 16 0 l12 156 z" fill="#161307"/>
+    <circle cx="731" cy="694" r="17" fill="#161307"/>
+    <path d="M800 900 l10 -122 a7 7 0 0 1 14 0 l6 48 l6 -34 a6 6 0 0 1 12 1 l9 107 z" fill="#161307"/>
+    <circle cx="817" cy="756" r="13" fill="#161307"/>
+    <path d="M0 880 q400 -46 800 -40 q400 6 800 40 l0 20 l-1600 0 z" fill="#14110a"/>
+  </g>
+</svg>

@@ -1,0 +1,114 @@
+/* ————————————————————————————————————————————————
+   Arc design tokens
+   Warm neutral canvas · graphite ink · one ember accent.
+   Hierarchy through weight and space, not color coding.
+   ———————————————————————————————————————————————— */
+
+:root {
+  color-scheme: light;
+
+  /* Canvas & surfaces */
+  --canvas: #f6f4ef;
+  --surface: #fffefb;
+  --surface-raised: #ffffff;
+  --surface-sunken: #efece5;
+  --surface-ink: #201d18; /* inverted surface for hero moments */
+
+  /* Ink */
+  --ink: #1c1a15;
+  --ink-2: #56524a;
+  --ink-3: #8b867c;
+  --ink-4: #b5afa3;
+  --ink-on-dark: #f4f2ec;
+  --ink-2-on-dark: rgba(244, 242, 236, 0.64);
+
+  /* Lines */
+  --line: rgba(28, 26, 21, 0.1);
+  --line-strong: rgba(28, 26, 21, 0.18);
+  --line-faint: rgba(28, 26, 21, 0.055);
+
+  /* Accent — ember. Used only where attention is earned. */
+  --accent: #c04f24;
+  --accent-ink: #a8431d;
+  --accent-soft: rgba(192, 79, 36, 0.09);
+  --accent-line: rgba(192, 79, 36, 0.28);
+  --on-accent: #fff7f2;
+
+  /* States */
+  --done: #8b867c;
+  --positive: #3d6b4f;
+
+  /* Type */
+  --font-ui: 'Inter Variable', 'Inter', -apple-system, 'Segoe UI', system-ui, sans-serif;
+  --font-editorial: 'Fraunces Variable', 'Fraunces', 'Iowan Old Style', Georgia, serif;
+
+  --text-xs: 0.6875rem; /* 11 */
+  --text-sm: 0.8125rem; /* 13 */
+  --text-md: 0.9375rem; /* 15 */
+  --text-lg: 1.125rem; /* 18 */
+  --text-xl: 1.5rem; /* 24 */
+  --text-2xl: 2rem; /* 32 */
+  --text-3xl: 2.75rem; /* 44 */
+
+  /* Space (4px base) */
+  --s1: 0.25rem;
+  --s2: 0.5rem;
+  --s3: 0.75rem;
+  --s4: 1rem;
+  --s5: 1.5rem;
+  --s6: 2rem;
+  --s7: 3rem;
+  --s8: 4rem;
+
+  /* Radii */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --r-full: 999px;
+
+  /* Elevation */
+  --shadow-1: 0 1px 2px rgba(28, 26, 21, 0.05);
+  --shadow-2: 0 2px 8px rgba(28, 26, 21, 0.07), 0 1px 2px rgba(28, 26, 21, 0.05);
+  --shadow-3: 0 12px 40px rgba(28, 26, 21, 0.14), 0 2px 8px rgba(28, 26, 21, 0.08);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --t-fast: 140ms;
+  --t-med: 240ms;
+  --t-slow: 420ms;
+}
+
+:root:not([data-theme='light']) {
+  @media (prefers-color-scheme: dark) {
+    color-scheme: dark;
+    --canvas: #161511;
+    --surface: #1e1c18;
+    --surface-raised: #24221d;
+    --surface-sunken: #121110;
+    --surface-ink: #efede6;
+
+    --ink: #edeae2;
+    --ink-2: #a8a396;
+    --ink-3: #7d786d;
+    --ink-4: #55524a;
+    --ink-on-dark: #1c1a15;
+    --ink-2-on-dark: rgba(28, 26, 21, 0.64);
+
+    --line: rgba(237, 234, 226, 0.1);
+    --line-strong: rgba(237, 234, 226, 0.2);
+    --line-faint: rgba(237, 234, 226, 0.05);
+
+    --accent: #d96b3d;
+    --accent-ink: #e07a4e;
+    --accent-soft: rgba(217, 107, 61, 0.13);
+    --accent-line: rgba(217, 107, 61, 0.35);
+    --on-accent: #21130c;
+
+    --done: #7d786d;
+    --positive: #7fae91;
+
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-2: 0 2px 8px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-3: 0 12px 40px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.35);
+  }
+}
