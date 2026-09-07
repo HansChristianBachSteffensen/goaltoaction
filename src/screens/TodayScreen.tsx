@@ -2,24 +2,18 @@ import { useMemo } from 'react'
 import { Pressable, ScrollView, View } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import {
-  actionsForDay,
-  areaName,
-  eventsForDay,
-  goalById,
-  useStore,
-} from '../state/store'
+import { actionsForDay, areaName, eventsForDay, goalById, useStore } from '../state/store'
 import type { Action, CalendarEvent } from '../model/types'
-import { TODAY, formatDuration, formatTime, toMinutes } from '../model/time'
-import { font, radius, space, text, useTheme } from '../theme'
-import { KLabel, Txt, Why } from '../ui/Txt'
+import { NOW_MINUTES, TODAY, formatDuration, formatTime, toMinutes } from '../model/time'
+import { radius, space, text, useTheme } from '../theme'
+import { KLabel, Stat, Txt, Why } from '../ui/Txt'
 import { Check } from '../ui/Check'
-import { ActionRow, EventRow } from '../ui/Row'
-import { GoalArt } from '../ui/GoalArt'
+import { Card } from '../ui/Card'
+import { Btn } from '../ui/Btn'
 import { Meter } from '../ui/Meter'
+import { CoachContent, CoachSignature } from '../coach/CoachPanel'
 import { IconArrowRight, IconChevronRight, IconRepeat } from '../ui/icons'
-import { useIsDesktop } from '../shell/AppShell'
-import type { GoalArtKey } from '../ui/GoalArt'
+import { useHasCoachPanel, useIsDesktop } from '../shell/AppShell'
 
 export default function TodayScreen() {
   const isDesktop = useIsDesktop()
@@ -38,10 +32,7 @@ function useDay() {
     const g = goalById(state, a.goalId)
     return g?.focus && a.status !== 'done' && (a.duration ?? 30) >= 30
   })
-  const mattersDone = actions.filter(
-    (a) => goalById(state, a.goalId)?.focus && a.status === 'done' && (a.duration ?? 30) >= 30,
-  )
-  const mattersIds = new Set([...matters, ...mattersDone].map((a) => a.id))
+  const mattersIds = new Set(matters.map((a) => a.id))
 
   const rest = useMemo(() => {
     const items: Array<{ at: number; event?: CalendarEvent; action?: Action }> = []
@@ -53,42 +44,40 @@ function useDay() {
     return items.sort((x, y) => x.at - y.at)
   }, [events, actions])
 
-  const openMin = openMinutes(state)
+  const openMin = computeOpen(state)
   const openLabel =
     openMin >= 60
-      ? `${Math.round((openMin / 60) * 2) / 2}h open`.replace('.5', '½')
-      : `${openMin} min open`
+      ? `${Math.round((openMin / 60) * 2) / 2}h`.replace('.5', '½')
+      : `${openMin}m`
 
+  const doneCount = actions.filter((a) => a.status === 'done').length
   const rhythms = state.actions.filter(
     (a) => a.rhythm && !a.day && a.status === 'open' && a.rhythm.includes('evening'),
   )
 
-  const allDone = actions.every((a) => a.status === 'done') && matters.length === 0
-
-  return { state, actions, events, meetings, matters, mattersDone, rest, openLabel, rhythms, allDone }
+  return { state, actions, events, meetings, matters, rest, openMin, openLabel, doneCount, rhythms }
 }
 
-function openMinutes(state: ReturnType<typeof useStore.getState>): number {
-  const NOW = 7 * 60 + 40
+function computeOpen(state: ReturnType<typeof useStore.getState>): number {
   const dayEnd = 22 * 60
   let busy = 0
   for (const e of eventsForDay(state, TODAY)) {
-    const s = Math.max(toMinutes(e.start), NOW)
+    const s = Math.max(toMinutes(e.start), NOW_MINUTES)
     const end = toMinutes(e.end)
     if (end > s) busy += end - s
   }
   for (const a of actionsForDay(state, TODAY)) {
     if (!a.time || a.status === 'done') continue
-    const s = Math.max(toMinutes(a.time), NOW)
+    const s = Math.max(toMinutes(a.time), NOW_MINUTES)
     const end = toMinutes(a.time) + (a.duration ?? 30)
     if (end > s) busy += end - s
   }
-  return Math.max(0, dayEnd - NOW - busy)
+  return Math.max(0, dayEnd - NOW_MINUTES - busy)
 }
 
-/* ————— Hero card ————— */
+/* ————— Hero: the day's decisive commitment ————— */
 
-function HeroCard({ action, big = false }: { action: Action; big?: boolean }) {
+function FocusHero({ action, big = false }: { action: Action; big?: boolean }) {
   const t = useTheme()
   const router = useRouter()
   const state = useStore()
@@ -97,89 +86,217 @@ function HeroCard({ action, big = false }: { action: Action; big?: boolean }) {
   if (!goal) return null
 
   return (
-    <Pressable
-      onPress={() => router.push(`/goal/${goal.id}`)}
-      style={({ pressed }) => ({
-        borderRadius: radius.lg,
-        overflow: 'hidden',
-        backgroundColor: t.surfaceInk,
-        minHeight: big ? 220 : 196,
-        padding: space.s5,
-        justifyContent: 'flex-end',
-        transform: [{ translateY: pressed ? 1 : 0 }],
-      })}
-    >
-      {goal.image && <GoalArt art={goal.image as GoalArtKey} scrim={big ? 'bottom' : 'left'} />}
-      <View style={{ position: 'absolute', top: space.s4, right: space.s4 }}>
-        <Check done={false} onToggle={() => toggleDone(action.id)} size={28} onDark />
-      </View>
-      <View style={{ gap: space.s2, maxWidth: big ? undefined : '74%' }}>
-        <KLabel color={t.accentOnDark}>
-          {action.time ? formatTime(action.time) : 'Anytime'}
+    <Card dark pad={big ? space.s5 : space.s6} style={{ gap: space.s3 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+        <KLabel color={t.volt} style={{ flex: 1 }}>
+          Next up · {action.time ? formatTime(action.time) : 'Anytime'}
           {action.duration ? ` · ${formatDuration(action.duration)}` : ''}
         </KLabel>
-        <Txt size={big ? 21 : text.xl} weight="semibold" color={t.inkOnDark}>
-          {action.title}
-        </Txt>
-        {goal.why && (
-          <Why size={big ? text.md : 16} color={t.ink2OnDark}>
-            {goal.why}
-          </Why>
-        )}
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: space.s1 }}>
-          <Txt size={text.sm} weight="medium" color="rgba(244,242,236,0.55)">
+        <Check done={false} onToggle={() => toggleDone(action.id)} size={26} onDark />
+      </View>
+      <Txt
+        size={big ? 26 : 32}
+        weight="black"
+        color={t.inkOnDark}
+        style={{ letterSpacing: -0.8, lineHeight: (big ? 26 : 32) * 1.08 }}
+      >
+        {action.title}
+      </Txt>
+      {goal.why && (
+        <Why size={text.md} color={t.ink2OnDark}>
+          {goal.why}
+        </Why>
+      )}
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: space.s3,
+          marginTop: space.s2,
+          flexWrap: 'wrap',
+        }}
+      >
+        <Btn
+          variant="volt"
+          label="Done"
+          onPress={() => toggleDone(action.id)}
+          icon={<IconArrowRight size={16} color={t.onVolt} strokeWidth={2.5} />}
+        />
+        <Pressable
+          onPress={() => router.push(`/goal/${goal.id}`)}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 8 }}
+        >
+          <Txt size={text.sm} weight="bold" color={t.ink2OnDark}>
             {goal.title}
           </Txt>
-          <IconArrowRight size={13} color="rgba(244,242,236,0.55)" />
-        </View>
+          <IconChevronRight size={13} color={t.ink3OnDark} />
+        </Pressable>
       </View>
-    </Pressable>
+    </Card>
   )
 }
 
-function MattersRow({ action }: { action: Action }) {
+/* ————— Schedule rows ————— */
+
+function ScheduleRow({
+  item,
+  onToggle,
+  context,
+  onContext,
+}: {
+  item: { event?: CalendarEvent; action?: Action }
+  onToggle?: () => void
+  context?: string
+  onContext?: () => void
+}) {
   const t = useTheme()
-  const state = useStore()
-  const toggleDone = useStore((s) => s.toggleDone)
-  const goal = goalById(state, action.goalId)
-  const done = action.status === 'done'
-  return (
-    <View
-      style={{
-        flexDirection: 'row',
-        gap: space.s3,
-        alignItems: 'flex-start',
-        padding: space.s3,
-        borderRadius: radius.md,
-        backgroundColor: t.surfaceRaised,
-        borderWidth: 1,
-        borderColor: t.lineFaint,
-      }}
-    >
-      <Check done={done} onToggle={() => toggleDone(action.id)} size={22} />
-      <View style={{ flex: 1, gap: 3 }}>
-        <View style={{ flexDirection: 'row', gap: space.s3, alignItems: 'baseline' }}>
-          {action.time && (
-            <Txt size={text.sm} color={t.ink3} style={{ fontVariant: ['tabular-nums'] }}>
-              {formatTime(action.time)}
-            </Txt>
-          )}
-          <Txt
-            weight="semibold"
-            color={done ? t.ink3 : t.ink}
-            style={[{ flex: 1 }, done ? { textDecorationLine: 'line-through' } : null]}
-          >
-            {action.title}
-          </Txt>
-          {action.duration && (
-            <Txt size={text.sm} color={t.ink4}>
-              {formatDuration(action.duration)}
-            </Txt>
-          )}
-        </View>
-        {!done && goal?.why && <Why color={t.ink3}>{goal.why}</Why>}
+  if (item.event) {
+    const e = item.event
+    const past = toMinutes(e.end) < NOW_MINUTES
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: space.s3,
+          paddingVertical: 11,
+          opacity: past ? 0.4 : 1,
+        }}
+      >
+        <Txt
+          size={text.sm}
+          weight="semibold"
+          color={t.ink3}
+          style={{ width: 48, fontVariant: ['tabular-nums'] }}
+        >
+          {formatTime(e.start)}
+        </Txt>
+        <View style={{ width: 3, alignSelf: 'stretch', borderRadius: 2, backgroundColor: t.ink4 }} />
+        <Txt size={text.md} weight="medium" color={t.ink2} numberOfLines={1} style={{ flex: 1 }}>
+          {e.title}
+        </Txt>
+        <Txt size={text.sm} color={t.ink4} style={{ fontVariant: ['tabular-nums'] }}>
+          {formatDuration(toMinutes(e.end) - toMinutes(e.start))}
+        </Txt>
       </View>
+    )
+  }
+  const a = item.action!
+  const done = a.status === 'done'
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s3, paddingVertical: 11 }}>
+      <Txt
+        size={text.sm}
+        weight="semibold"
+        color={t.ink3}
+        style={{ width: 48, fontVariant: ['tabular-nums'] }}
+      >
+        {a.time ? formatTime(a.time) : ''}
+      </Txt>
+      <Check done={done} onToggle={onToggle ?? (() => {})} size={22} />
+      <Txt
+        size={text.md}
+        weight="bold"
+        color={done ? t.ink3 : t.ink}
+        numberOfLines={1}
+        style={[{ flex: 1 }, done ? { textDecorationLine: 'line-through' } : null]}
+      >
+        {a.title}
+      </Txt>
+      {context ? (
+        <Pressable
+          onPress={onContext}
+          style={{
+            backgroundColor: t.cardSunken,
+            borderRadius: radius.sm - 2,
+            paddingHorizontal: 8,
+            paddingVertical: 3,
+            maxWidth: 150,
+          }}
+        >
+          <Txt size={text.xs} weight="semibold" color={t.ink2} numberOfLines={1}>
+            {context}
+          </Txt>
+        </Pressable>
+      ) : null}
+      <Txt size={text.sm} color={t.ink4} style={{ fontVariant: ['tabular-nums'] }}>
+        {a.duration ? formatDuration(a.duration) : ''}
+      </Txt>
     </View>
+  )
+}
+
+/* ————— Capacity: the day as a bar ————— */
+
+function CapacityCard({ day }: { day: ReturnType<typeof useDay> }) {
+  const t = useTheme()
+  const dayStart = 7 * 60
+  const dayEnd = 22 * 60
+  const span = dayEnd - dayStart
+  const blocks: Array<{ from: number; to: number; kind: 'event' | 'action' }> = [
+    ...day.events.map((e) => ({ from: toMinutes(e.start), to: toMinutes(e.end), kind: 'event' as const })),
+    ...day.actions
+      .filter((a) => a.time && a.status !== 'done')
+      .map((a) => ({
+        from: toMinutes(a.time!),
+        to: toMinutes(a.time!) + (a.duration ?? 30),
+        kind: 'action' as const,
+      })),
+  ]
+  return (
+    <Card style={{ gap: space.s3 }}>
+      <KLabel>Capacity</KLabel>
+      <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}>
+        <Stat size={38}>{day.openLabel}</Stat>
+        <Txt size={text.sm} weight="semibold" color={t.ink3} style={{ paddingBottom: 5 }}>
+          open before 22:00
+        </Txt>
+      </View>
+      <View
+        style={{
+          height: 14,
+          borderRadius: radius.sm - 2,
+          backgroundColor: t.cardSunken,
+          overflow: 'hidden',
+        }}
+      >
+        {blocks.map((b, i) => (
+          <View
+            key={i}
+            style={{
+              position: 'absolute',
+              left: `${(Math.max(b.from - dayStart, 0) / span) * 100}%`,
+              width: `${(Math.max(b.to - Math.max(b.from, dayStart), 0) / span) * 100}%`,
+              top: 0,
+              bottom: 0,
+              backgroundColor: b.kind === 'event' ? t.ink4 : t.ink,
+            }}
+          />
+        ))}
+        <View
+          style={{
+            position: 'absolute',
+            left: `${((NOW_MINUTES - dayStart) / span) * 100}%`,
+            top: -1,
+            bottom: -1,
+            width: 3,
+            backgroundColor: t.accent,
+            borderRadius: 2,
+          }}
+        />
+      </View>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        <Txt size={text.xs} weight="semibold" color={t.ink4}>
+          7:00
+        </Txt>
+        <Txt size={text.xs} weight="semibold" color={t.ink4}>
+          22:00
+        </Txt>
+      </View>
+      <Txt size={text.sm} color={t.ink3}>
+        Realistic. {day.meetings.length} meetings, one training block, and room to breathe.
+      </Txt>
+    </Card>
   )
 }
 
@@ -188,137 +305,142 @@ function MattersRow({ action }: { action: Action }) {
 function TodayDesktop() {
   const t = useTheme()
   const router = useRouter()
+  const hasCoach = useHasCoachPanel()
   const day = useDay()
   const toggleDone = useStore((s) => s.toggleDone)
   const state = day.state
-
-  const focus = state.goals.filter((g) => g.focus)
   const inboxCount = state.actions.filter((a) => a.status === 'inbox').length
 
   return (
-    <ScrollView contentContainerStyle={{ padding: space.s7, paddingTop: space.s8 }}>
-      <View
-        style={{
-          flexDirection: 'row',
-          gap: space.s8,
-          maxWidth: 1060,
-          width: '100%',
-          alignSelf: 'center',
-        }}
-      >
-        <View style={{ flex: 1, maxWidth: 640, gap: space.s7 }}>
-          <View style={{ gap: space.s2 }}>
-            <Txt size={text.x3} weight="bold" style={{ letterSpacing: -1.4, lineHeight: text.x3 }}>
-              Tuesday
-            </Txt>
-            <Txt color={t.ink3}>
-              8 September · {day.meetings.length} meetings · {day.openLabel}
-            </Txt>
-          </View>
+    <ScrollView contentContainerStyle={{ padding: space.s6, paddingBottom: space.s8 }}>
+      <View style={{ width: '100%', maxWidth: 1200, alignSelf: 'center', gap: space.s5 }}>
+        <View style={{ gap: space.s2 }}>
+          <KLabel color={t.accent}>Tuesday · 8 September</KLabel>
+          <Txt size={56} weight="black" style={{ letterSpacing: -2.2, lineHeight: 56 }}>
+            Today
+          </Txt>
+          <Txt size={text.lg} weight="medium" color={t.ink2}>
+            {day.meetings.length} meetings · {day.openLabel} open · {day.matters.length} focus
+            commitment{day.matters.length === 1 ? '' : 's'} left
+          </Txt>
+        </View>
 
-          {(day.matters.length > 0 || day.mattersDone.length > 0) && (
-            <View style={{ gap: space.s3 }}>
-              <KLabel color={t.accentInk} style={{ marginBottom: space.s1 }}>
-                What matters today
-              </KLabel>
-              {day.matters[0] && <HeroCard action={day.matters[0]} />}
-              {day.matters.slice(1).map((a) => (
-                <MattersRow key={a.id} action={a} />
-              ))}
-              {day.mattersDone.map((a) => (
-                <MattersRow key={a.id} action={a} />
-              ))}
-              {day.matters.length === 0 && day.mattersDone.length > 0 && (
-                <Why size={text.lg}>Done. The thing that mattered most today is behind you.</Why>
+        {day.matters[0] ? (
+          <FocusHero action={day.matters[0]} />
+        ) : (
+          <Card dark style={{ gap: space.s2 }}>
+            <KLabel color={t.volt}>Done</KLabel>
+            <Txt size={26} weight="black" color={t.inkOnDark} style={{ letterSpacing: -0.6 }}>
+              Everything that mattered today is behind you.
+            </Txt>
+          </Card>
+        )}
+
+        <View style={{ flexDirection: 'row', gap: space.s4, flexWrap: 'wrap' }}>
+          <Card style={{ flex: 1.5, minWidth: 380, gap: space.s2 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <KLabel style={{ flex: 1 }}>Schedule</KLabel>
+              {day.doneCount > 0 && (
+                <Txt size={text.xs} weight="bold" color={t.ink3}>
+                  {day.doneCount} done
+                </Txt>
               )}
             </View>
-          )}
-
-          <View style={{ gap: space.s3 }}>
-            <KLabel>Today</KLabel>
-            {day.allDone ? (
-              <Why size={text.lg} style={{ paddingVertical: space.s4 }}>
-                That’s the day. Nothing else needs you.
-              </Why>
-            ) : (
-              <View>
-                {day.rest.map((item) =>
-                  item.event ? (
-                    <EventRow key={item.event.id} event={item.event} />
-                  ) : (
-                    <ActionRow
-                      key={item.action!.id}
-                      action={item.action!}
-                      onToggle={() => toggleDone(item.action!.id)}
-                      context={contextLabel(item.action!, state)}
-                      onPressContext={() => {
-                        const a = item.action!
-                        if (a.goalId) router.push(`/goal/${a.goalId}`)
-                        else if (a.areaId) router.push(`/area/${a.areaId}`)
-                      }}
-                    />
-                  ),
-                )}
-              </View>
-            )}
-          </View>
-
-          {day.rhythms.length > 0 && (
-            <View style={{ gap: space.s3 }}>
-              <KLabel>This evening</KLabel>
-              {day.rhythms.map((a) => (
-                <RhythmChip key={a.id} title={a.title} />
+            <View>
+              {day.rest.map((item, i) => (
+                <View
+                  key={item.event?.id ?? item.action?.id}
+                  style={{ borderTopWidth: i === 0 ? 0 : 1, borderTopColor: t.lineFaint }}
+                >
+                  <ScheduleRow
+                    item={item}
+                    onToggle={item.action ? () => toggleDone(item.action!.id) : undefined}
+                    context={
+                      item.action
+                        ? (goalById(state, item.action.goalId)?.title ?? areaName(item.action.areaId))
+                        : undefined
+                    }
+                    onContext={() => {
+                      const a = item.action
+                      if (!a) return
+                      if (a.goalId) router.push(`/goal/${a.goalId}`)
+                      else if (a.areaId) router.push(`/area/${a.areaId}`)
+                    }}
+                  />
+                </View>
               ))}
             </View>
-          )}
+            {day.rhythms.map((a) => (
+              <View
+                key={a.id}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 8,
+                  borderTopWidth: 1,
+                  borderTopColor: t.lineFaint,
+                  paddingTop: space.s3,
+                }}
+              >
+                <IconRepeat size={14} color={t.ink3} strokeWidth={2} />
+                <Txt size={text.sm} weight="semibold" color={t.ink2}>
+                  {a.title}
+                </Txt>
+                <Txt size={text.xs} weight="semibold" color={t.ink4}>
+                  · every evening
+                </Txt>
+              </View>
+            ))}
+          </Card>
+
+          <View style={{ flex: 1, minWidth: 300, gap: space.s4 }}>
+            <CapacityCard day={day} />
+            {day.matters.length > 1 && (
+              <Card style={{ gap: space.s3 }}>
+                <KLabel>Also today</KLabel>
+                {day.matters.slice(1).map((a) => {
+                  const g = goalById(state, a.goalId)!
+                  return (
+                    <View key={a.id} style={{ flexDirection: 'row', gap: space.s3, alignItems: 'center' }}>
+                      <Check done={false} onToggle={() => toggleDone(a.id)} size={22} />
+                      <View style={{ flex: 1 }}>
+                        <Txt size={text.md} weight="bold">
+                          {a.time ? `${formatTime(a.time)} · ` : ''}
+                          {a.title}
+                        </Txt>
+                        <Txt size={text.sm} color={t.ink3} numberOfLines={1}>
+                          {g.title}
+                        </Txt>
+                      </View>
+                    </View>
+                  )
+                })}
+              </Card>
+            )}
+            {inboxCount > 0 && (
+              <Card sunken pad={space.s4} onPress={() => router.push('/inbox')}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s2 }}>
+                  <Txt size={text.sm} weight="bold" color={t.ink2} style={{ flex: 1 }}>
+                    {inboxCount} captures waiting to be sorted
+                  </Txt>
+                  <IconArrowRight size={15} color={t.ink3} />
+                </View>
+              </Card>
+            )}
+          </View>
         </View>
 
-        <View style={{ width: 248, gap: space.s4, paddingTop: 76 }}>
-          <Pressable
-            onPress={() => router.push('/week')}
-            style={{
-              gap: space.s4,
-              padding: space.s4,
-              borderRadius: radius.md,
-              backgroundColor: t.surfaceRaised,
-              borderWidth: 1,
-              borderColor: t.lineFaint,
-            }}
-          >
-            <KLabel>This week</KLabel>
-            {focus.map((g) => {
-              const planned = plannedFor(state, g.id)
-              const intent = (g.hoursPerWeek ?? 0) * 60
-              return (
-                <View key={g.id} style={{ gap: 4 }}>
-                  <Txt size={text.sm} weight="semibold" style={{ lineHeight: text.sm * 1.3 }}>
-                    {g.title}
-                  </Txt>
-                  <Txt size={text.xs} color={t.ink3}>
-                    {formatDuration(planned)} of ~{g.hoursPerWeek}h placed
-                  </Txt>
-                  <Meter ratio={intent ? planned / intent : 0} />
-                </View>
-              )
-            })}
-          </Pressable>
-          {inboxCount > 0 && (
-            <Pressable
-              onPress={() => router.push('/inbox')}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 6,
-                paddingHorizontal: space.s4,
-              }}
-            >
-              <Txt size={text.sm} color={t.ink3}>
-                {inboxCount} captured, waiting to be sorted
+        {!hasCoach && (
+          <Card style={{ gap: space.s4 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s3 }}>
+              <CoachSignature />
+              <Txt size={text.md} weight="heavy">
+                Coach
               </Txt>
-              <IconArrowRight size={13} color={t.ink3} />
-            </Pressable>
-          )}
-        </View>
+            </View>
+            <CoachContent compact />
+          </Card>
+        )}
       </View>
     </ScrollView>
   )
@@ -338,125 +460,118 @@ function TodayMobile() {
   return (
     <ScrollView
       contentContainerStyle={{
-        paddingTop: Math.max(space.s6, insets.top + space.s3),
-        paddingHorizontal: space.s5,
-        paddingBottom: 120,
-        gap: space.s6,
+        paddingTop: Math.max(space.s5, insets.top + space.s2),
+        paddingHorizontal: space.s4,
+        paddingBottom: 130,
+        gap: space.s4,
       }}
     >
-      <View style={{ gap: space.s2 }}>
-        <Txt size={34} weight="bold" style={{ letterSpacing: -1, lineHeight: 36 }}>
-          Tuesday
+      <View style={{ gap: 6, paddingHorizontal: space.s1 }}>
+        <KLabel color={t.accent}>Tuesday · 8 September</KLabel>
+        <Txt size={40} weight="black" style={{ letterSpacing: -1.6, lineHeight: 42 }}>
+          Today
         </Txt>
-        <Txt color={t.ink3}>
-          8 September · {day.meetings.length} meetings · {day.openLabel}
+        <Txt size={text.md} weight="medium" color={t.ink2}>
+          {day.meetings.length} meetings · {day.openLabel} open
         </Txt>
       </View>
+
+      {day.matters[0] && <FocusHero action={day.matters[0]} big />}
+
+      <Card pad={space.s4} onPress={() => router.push('/coach')} style={{ gap: space.s2 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s3 }}>
+          <CoachSignature size={26} />
+          <KLabel style={{ flex: 1 }}>Coach</KLabel>
+          <IconChevronRight size={14} color={t.ink4} />
+        </View>
+        <CoachTeaser />
+      </Card>
+
+      <Card style={{ gap: space.s2 }}>
+        <KLabel>Schedule</KLabel>
+        <View>
+          {day.rest.map((item, i) => (
+            <View
+              key={item.event?.id ?? item.action?.id}
+              style={{ borderTopWidth: i === 0 ? 0 : 1, borderTopColor: t.lineFaint }}
+            >
+              <ScheduleRow
+                item={item}
+                onToggle={item.action ? () => toggleDone(item.action!.id) : undefined}
+              />
+            </View>
+          ))}
+        </View>
+        {day.rhythms.map((a) => (
+          <View
+            key={a.id}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+              borderTopWidth: 1,
+              borderTopColor: t.lineFaint,
+              paddingTop: space.s3,
+            }}
+          >
+            <IconRepeat size={14} color={t.ink3} strokeWidth={2} />
+            <Txt size={text.sm} weight="semibold" color={t.ink2}>
+              {a.title} · every evening
+            </Txt>
+          </View>
+        ))}
+      </Card>
+
+      {day.matters.length > 1 && (
+        <Card style={{ gap: space.s3 }}>
+          <KLabel>Also today</KLabel>
+          {day.matters.slice(1).map((a) => (
+            <View key={a.id} style={{ flexDirection: 'row', gap: space.s3, alignItems: 'center' }}>
+              <Check done={false} onToggle={() => toggleDone(a.id)} size={24} />
+              <View style={{ flex: 1 }}>
+                <Txt size={text.md} weight="bold">
+                  {a.time ? `${formatTime(a.time)} · ` : ''}
+                  {a.title}
+                </Txt>
+                <Txt size={text.sm} color={t.ink3} numberOfLines={1}>
+                  {goalById(state, a.goalId)?.title}
+                </Txt>
+              </View>
+            </View>
+          ))}
+        </Card>
+      )}
 
       {inboxCount > 0 && (
-        <Pressable
-          onPress={() => router.push('/inbox')}
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: space.s2,
-            paddingVertical: space.s3,
-            paddingHorizontal: space.s4,
-            borderRadius: radius.md,
-            backgroundColor: t.surfaceRaised,
-            borderWidth: 1,
-            borderColor: t.lineFaint,
-          }}
-        >
-          <Txt size={text.sm} weight="medium" color={t.ink2}>
-            {inboxCount} captured · sort {inboxCount === 1 ? 'it' : 'them'} when you’re ready
-          </Txt>
-          <IconChevronRight size={14} color={t.ink3} />
-        </Pressable>
-      )}
-
-      {day.matters.length > 0 && (
-        <View style={{ gap: space.s3 }}>
-          <KLabel color={t.accentInk}>What matters today</KLabel>
-          <HeroCard action={day.matters[0]} big />
-          {day.matters.slice(1).map((a) => (
-            <MattersRow key={a.id} action={a} />
-          ))}
-        </View>
-      )}
-
-      <View style={{ gap: space.s3 }}>
-        <KLabel>Today</KLabel>
-        {day.allDone ? (
-          <Why size={text.lg} style={{ paddingVertical: space.s3 }}>
-            That’s the day. Nothing else needs you.
-          </Why>
-        ) : (
-          <View>
-            {day.rest.map((item) =>
-              item.event ? (
-                <EventRow key={item.event.id} event={item.event} big />
-              ) : (
-                <ActionRow
-                  key={item.action!.id}
-                  action={item.action!}
-                  onToggle={() => toggleDone(item.action!.id)}
-                  big
-                />
-              ),
-            )}
+        <Card sunken pad={space.s4} onPress={() => router.push('/inbox')}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s2 }}>
+            <Txt size={text.sm} weight="bold" color={t.ink2} style={{ flex: 1 }}>
+              {inboxCount} captures waiting to be sorted
+            </Txt>
+            <IconArrowRight size={15} color={t.ink3} />
           </View>
-        )}
-      </View>
-
-      {day.rhythms.length > 0 && (
-        <View style={{ gap: space.s3 }}>
-          <KLabel>This evening</KLabel>
-          {day.rhythms.map((a) => (
-            <RhythmChip key={a.id} title={a.title} />
-          ))}
-        </View>
+        </Card>
       )}
     </ScrollView>
   )
 }
 
-/* ————— Bits ————— */
-
-function RhythmChip({ title }: { title: string }) {
+function CoachTeaser() {
   const t = useTheme()
+  const state = useStore()
+  const items = useMemo(() => coachTeaserItems(state), [state])
+  if (!items) return null
   return (
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: space.s2,
-        alignSelf: 'flex-start',
-        borderWidth: 1,
-        borderColor: t.lineStrong,
-        borderStyle: 'dashed',
-        borderRadius: radius.full,
-        paddingVertical: 6,
-        paddingHorizontal: 14,
-      }}
-    >
-      <IconRepeat size={13} color={t.ink2} strokeWidth={1.8} />
-      <Txt size={text.sm} weight="medium" color={t.ink2}>
-        {title}
-      </Txt>
-    </View>
+    <Txt size={text.sm} weight="medium" color={t.ink2} numberOfLines={2} style={{ lineHeight: text.sm * 1.45 }}>
+      {items}
+    </Txt>
   )
 }
 
-function contextLabel(a: Action, state: ReturnType<typeof useStore.getState>): string {
-  const g = goalById(state, a.goalId)
-  if (g) return g.title
-  return areaName(a.areaId)
-}
-
-function plannedFor(state: ReturnType<typeof useStore.getState>, goalId: string): number {
-  return state.actions
-    .filter((a) => a.goalId === goalId && a.day && a.status !== 'inbox')
-    .reduce((sum, a) => sum + (a.duration ?? 30), 0)
+function coachTeaserItems(state: ReturnType<typeof useStore.getState>): string {
+  const blocks = state.suggestedBlocks
+  if (blocks.length > 0) {
+    return `${blocks[0].reason} One tap places it.`
+  }
+  return 'The week is holding its shape. Nothing needs a decision right now.'
 }

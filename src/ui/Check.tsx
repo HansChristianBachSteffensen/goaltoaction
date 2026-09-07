@@ -10,13 +10,13 @@ import * as Haptics from 'expo-haptics'
 import { IconCheck } from './icons'
 import { useTheme } from '../theme'
 
-/* The circular action check. Completion gets a small physical pop and a
-   light haptic — a sense of movement, never confetti. */
+/* The action check. Completion fills ink and strikes the mark in volt —
+   a small physical pop and a light haptic. Movement, not confetti. */
 
 export function Check({
   done,
   onToggle,
-  size = 22,
+  size = 24,
   onDark = false,
 }: {
   done: boolean
@@ -29,9 +29,9 @@ export function Check({
 
   const animated = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }))
 
-  const fill = onDark ? t.inkOnDark : t.ink
-  const border = onDark ? 'rgba(244,242,236,0.4)' : t.lineStrong
-  const mark = onDark ? t.surfaceInk : t.canvas
+  const fill = onDark ? t.volt : t.ink
+  const mark = onDark ? t.onVolt : t.volt
+  const border = onDark ? 'rgba(245,246,248,0.4)' : t.lineStrong
 
   return (
     <Pressable
@@ -41,8 +41,8 @@ export function Check({
       onPress={() => {
         if (!done) {
           scale.value = withSequence(
-            withTiming(0.82, { duration: 90 }),
-            withSpring(1, { damping: 12, stiffness: 260 }),
+            withTiming(0.8, { duration: 80 }),
+            withSpring(1, { damping: 11, stiffness: 300 }),
           )
           if (Platform.OS !== 'web') {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
@@ -56,8 +56,8 @@ export function Check({
           {
             width: size,
             height: size,
-            borderRadius: size / 2,
-            borderWidth: 1.5,
+            borderRadius: size * 0.32,
+            borderWidth: 2,
             borderColor: done ? fill : border,
             backgroundColor: done ? fill : 'transparent',
             alignItems: 'center',
@@ -66,7 +66,7 @@ export function Check({
           animated,
         ]}
       >
-        {done && <IconCheck size={size * 0.62} color={mark} strokeWidth={3.5} />}
+        {done && <IconCheck size={size * 0.6} color={mark} strokeWidth={3.5} />}
       </Animated.View>
     </Pressable>
   )

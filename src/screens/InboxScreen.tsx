@@ -114,9 +114,9 @@ function SuggestionLine({ action }: { action: Action }) {
   return (
     <View style={{ flexDirection: 'row', gap: 6, flex: 1, minWidth: 0, alignItems: 'flex-start' }}>
       <View style={{ marginTop: 2 }}>
-        <IconSpark size={14} color={t.accentInk} strokeWidth={1.6} />
+        <IconSpark size={14} color={t.accentDeep} strokeWidth={1.6} />
       </View>
-      <Txt size={text.sm} color={t.accentInk} weight="semibold" style={{ flex: 1, lineHeight: text.sm * 1.45 }}>
+      <Txt size={text.sm} color={t.accentDeep} weight="semibold" style={{ flex: 1, lineHeight: text.sm * 1.45 }}>
         {goal ? goal.title : areaName(suggestion.areaId)}
         {suggestion.day ? ` · ${dayName(suggestion.day)}` : ''}
         {suggestion.duration ? ` · ${formatDuration(suggestion.duration)}` : ''}
@@ -174,7 +174,7 @@ function InboxCard({ action }: { action: Action }) {
   return (
     <View
       style={{
-        backgroundColor: t.surfaceRaised,
+        backgroundColor: t.card,
         borderRadius: radius.md,
         borderWidth: 1,
         borderColor: t.lineFaint,
@@ -297,7 +297,7 @@ function InboxMobile() {
         <View
           key={current.id}
           style={{
-            backgroundColor: t.surfaceRaised,
+            backgroundColor: t.card,
             borderRadius: radius.lg,
             borderWidth: 1,
             borderColor: t.lineFaint,

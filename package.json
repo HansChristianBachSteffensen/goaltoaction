@@ -3,7 +3,7 @@
   "main": "expo-router/entry",
   "version": "0.2.0",
   "dependencies": {
-    "@expo-google-fonts/fraunces": "^0.4.1",
+    "@expo-google-fonts/archivo": "^0.4.2",
     "@expo-google-fonts/inter": "^0.4.2",
     "@tabler/icons-react-native": "^3.31.0",
     "expo": "~57.0.20",

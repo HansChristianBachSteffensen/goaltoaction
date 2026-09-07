@@ -2,25 +2,33 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { Platform, Pressable, View, useWindowDimensions } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { usePathname, useRouter } from 'expo-router'
-import { useStore, areas, focusGoals, inboxItems } from '../state/store'
+import { useStore, areas } from '../state/store'
 import { font, radius, space, text, useTheme } from '../theme'
-import { KLabel, Txt, Why } from '../ui/Txt'
+import { KLabel, Txt } from '../ui/Txt'
 import { IconFocus, IconGoals, IconInbox, IconPlus, IconSun, IconWeek } from '../ui/icons'
 import { Capture } from '../screens/Capture'
+import { CoachPanel } from '../coach/CoachPanel'
 
 export const DESKTOP_MIN_WIDTH = 768
+export const COACH_MIN_WIDTH = 1240
 
 export function useIsDesktop(): boolean {
   const { width } = useWindowDimensions()
   return width >= DESKTOP_MIN_WIDTH
 }
 
-/* One product, two presentations: a restrained sidebar on desktop,
-   three thumb-reach tabs and an always-near capture button on mobile. */
+export function useHasCoachPanel(): boolean {
+  const { width } = useWindowDimensions()
+  return width >= COACH_MIN_WIDTH
+}
+
+/* Three zones on desktop: compact rail, wide workspace, persistent coach.
+   On mobile: full-bleed cards, three tabs, capture always in thumb reach. */
 
 export function AppShell({ children }: { children: ReactNode }) {
   const t = useTheme()
   const isDesktop = useIsDesktop()
+  const hasCoach = useHasCoachPanel()
   const pathname = usePathname()
   const router = useRouter()
   const [capturing, setCapturing] = useState(false)
@@ -57,8 +65,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   if (isDesktop) {
     return (
       <View style={{ flex: 1, flexDirection: 'row', backgroundColor: t.canvas }}>
-        <Sidebar onCapture={() => setCapturing(true)} />
+        <Rail onCapture={() => setCapturing(true)} />
         <View style={{ flex: 1, minWidth: 0 }}>{children}</View>
+        {hasCoach && <CoachPanel />}
         {capturing && <Capture onClose={() => setCapturing(false)} />}
       </View>
     )
@@ -74,9 +83,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   )
 }
 
-/* ————— Desktop sidebar ————— */
+/* ————— Desktop rail ————— */
 
-function Sidebar({ onCapture }: { onCapture: () => void }) {
+function Rail({ onCapture }: { onCapture: () => void }) {
   const t = useTheme()
   const pathname = usePathname()
   const router = useRouter()
@@ -88,88 +97,87 @@ function Sidebar({ onCapture }: { onCapture: () => void }) {
   return (
     <View
       style={{
-        width: 232,
+        width: 216,
         borderRightWidth: 1,
-        borderRightColor: t.lineFaint,
+        borderRightColor: t.line,
         paddingVertical: space.s5,
-        paddingLeft: space.s5,
-        paddingRight: space.s4,
+        paddingHorizontal: space.s4,
         gap: space.s6,
+        backgroundColor: t.canvas,
       }}
     >
       <Pressable onPress={() => router.push('/week')} style={{ paddingHorizontal: space.s2 }}>
-        <Why size={20} color={t.ink}>
-          North
-        </Why>
+        <Txt size={19} weight="black" style={{ letterSpacing: 2.5 }}>
+          NORTH
+        </Txt>
       </Pressable>
 
       <Pressable
         onPress={onCapture}
-        style={{
+        style={({ pressed }) => ({
           flexDirection: 'row',
           alignItems: 'center',
           gap: space.s2,
-          paddingVertical: 8,
-          paddingHorizontal: 10,
-          borderRadius: radius.md,
-          backgroundColor: t.surfaceRaised,
-          borderWidth: 1,
-          borderColor: t.lineFaint,
-        }}
+          paddingVertical: 10,
+          paddingHorizontal: 12,
+          borderRadius: radius.sm + 2,
+          backgroundColor: t.ink,
+          transform: [{ scale: pressed ? 0.98 : 1 }],
+        })}
       >
-        <IconPlus size={14} color={t.ink2} />
-        <Txt size={text.sm} weight="medium" color={t.ink2} style={{ flex: 1 }}>
+        <IconPlus size={15} color={t.volt} strokeWidth={2.5} />
+        <Txt size={text.sm} weight="bold" color={t.canvas} style={{ flex: 1 }}>
           Capture
         </Txt>
         <View
           style={{
             borderWidth: 1,
-            borderColor: t.line,
+            borderColor: 'rgba(245,246,248,0.3)',
             borderRadius: 4,
             paddingHorizontal: 5,
           }}
         >
-          <Txt size={text.xs} color={t.ink4}>
+          <Txt size={text.xs} weight="semibold" color="rgba(245,246,248,0.6)">
             C
           </Txt>
         </View>
       </Pressable>
 
-      <View style={{ gap: 2 }}>
-        <SideLink
+      <View style={{ gap: 3 }}>
+        <RailLink
           label="Today"
-          icon={<IconSun size={16} color={pathname === '/today' ? t.ink : t.ink3} strokeWidth={1.8} />}
+          icon={IconSun}
           active={pathname === '/today'}
           onPress={() => router.push('/today')}
         />
-        <SideLink
+        <RailLink
           label="This week"
-          icon={<IconWeek size={16} color={pathname === '/week' ? t.ink : t.ink3} strokeWidth={1.8} />}
+          icon={IconWeek}
           active={pathname === '/week'}
           onPress={() => router.push('/week')}
         />
-        <SideLink
+        <RailLink
           label="Inbox"
-          icon={<IconInbox size={16} color={pathname === '/inbox' ? t.ink : t.ink3} strokeWidth={1.8} />}
+          icon={IconInbox}
           active={pathname === '/inbox'}
           onPress={() => router.push('/inbox')}
           badge={inboxCount || undefined}
         />
       </View>
 
-      <View style={{ gap: 2 }}>
+      <View style={{ gap: 3 }}>
         <View
           style={{
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
             paddingHorizontal: space.s2,
-            paddingBottom: space.s2,
+            paddingBottom: space.s1,
           }}
         >
           <KLabel>Focus</KLabel>
           <Pressable onPress={() => router.push('/focus')} hitSlop={8}>
-            <IconFocus size={14} color={t.ink4} strokeWidth={1.8} />
+            <IconFocus size={14} color={t.ink4} strokeWidth={2} />
           </Pressable>
         </View>
         {focus.map((g) => {
@@ -181,27 +189,28 @@ function Sidebar({ onCapture }: { onCapture: () => void }) {
               style={{
                 flexDirection: 'row',
                 gap: 8,
-                paddingVertical: 6,
+                paddingVertical: 7,
                 paddingHorizontal: space.s2,
                 borderRadius: radius.sm,
-                backgroundColor: active ? t.lineFaint : 'transparent',
+                backgroundColor: active ? t.card : 'transparent',
+                borderWidth: active ? 1 : 0,
+                borderColor: t.lineFaint,
               }}
             >
               <View
                 style={{
-                  width: 5,
-                  height: 5,
-                  borderRadius: 3,
-                  backgroundColor: t.accent,
-                  marginTop: 7,
+                  width: 4,
+                  borderRadius: 2,
+                  backgroundColor: t.volt,
+                  alignSelf: 'stretch',
                 }}
               />
               <Txt
                 size={text.sm}
-                weight="medium"
+                weight={active ? 'bold' : 'semibold'}
                 color={active ? t.ink : t.ink2}
                 numberOfLines={2}
-                style={{ flex: 1, lineHeight: text.sm * 1.35 }}
+                style={{ flex: 1, lineHeight: text.sm * 1.3 }}
               >
                 {g.title}
               </Txt>
@@ -211,7 +220,7 @@ function Sidebar({ onCapture }: { onCapture: () => void }) {
       </View>
 
       <View style={{ gap: 2 }}>
-        <View style={{ paddingHorizontal: space.s2, paddingBottom: space.s2 }}>
+        <View style={{ paddingHorizontal: space.s2, paddingBottom: space.s1 }}>
           <KLabel>Life</KLabel>
         </View>
         {areas.map((a) => {
@@ -221,15 +230,17 @@ function Sidebar({ onCapture }: { onCapture: () => void }) {
               key={a.id}
               onPress={() => router.push(`/area/${a.id}`)}
               style={{
-                paddingVertical: 5,
+                paddingVertical: 6,
                 paddingHorizontal: space.s2,
                 borderRadius: radius.sm,
-                backgroundColor: active ? t.lineFaint : 'transparent',
+                backgroundColor: active ? t.card : 'transparent',
+                borderWidth: active ? 1 : 0,
+                borderColor: t.lineFaint,
               }}
             >
               <Txt
                 size={text.sm}
-                weight={active ? 'semibold' : 'medium'}
+                weight={active ? 'bold' : 'semibold'}
                 color={active ? t.ink : t.ink2}
               >
                 {a.name}
@@ -242,15 +253,15 @@ function Sidebar({ onCapture }: { onCapture: () => void }) {
   )
 }
 
-function SideLink({
+function RailLink({
   label,
-  icon,
+  icon: Icon,
   active,
   onPress,
   badge,
 }: {
   label: string
-  icon: ReactNode
+  icon: (p: { size?: number | string; color?: string; strokeWidth?: number | string }) => React.ReactNode
   active: boolean
   onPress: () => void
   badge?: number
@@ -263,27 +274,31 @@ function SideLink({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 10,
-        paddingVertical: 7,
+        paddingVertical: 9,
         paddingHorizontal: space.s2,
         borderRadius: radius.sm,
-        backgroundColor: active ? t.lineFaint : 'transparent',
+        backgroundColor: active ? t.card : 'transparent',
+        borderWidth: active ? 1 : 0,
+        borderColor: t.lineFaint,
       }}
     >
-      {icon}
-      <Txt size={text.sm} weight={active ? 'semibold' : 'medium'} color={active ? t.ink : t.ink2}>
+      <Icon size={17} color={active ? t.accent : t.ink3} strokeWidth={active ? 2.2 : 1.9} />
+      <Txt size={text.sm} weight={active ? 'bold' : 'semibold'} color={active ? t.ink : t.ink2}>
         {label}
       </Txt>
       {badge !== undefined && (
         <View
           style={{
             marginLeft: 'auto',
-            backgroundColor: t.lineFaint,
-            borderRadius: radius.full,
-            paddingHorizontal: 7,
+            backgroundColor: t.accent,
+            borderRadius: radius.sm - 2,
+            minWidth: 20,
+            alignItems: 'center',
+            paddingHorizontal: 5,
             paddingVertical: 1,
           }}
         >
-          <Txt size={text.xs} weight="semibold" color={t.ink3}>
+          <Txt size={text.xs} weight="bold" color={t.onAccent}>
             {badge}
           </Txt>
         </View>
@@ -307,16 +322,17 @@ function TabBar() {
   ] as const
 
   const isTab = (href: string) =>
-    pathname === href || (href === '/goals' && (pathname.startsWith('/goal') || pathname.startsWith('/area')))
+    pathname === href ||
+    (href === '/goals' && (pathname.startsWith('/goal') || pathname.startsWith('/area')))
 
   return (
     <View
       style={{
         flexDirection: 'row',
         borderTopWidth: 1,
-        borderTopColor: t.lineFaint,
-        backgroundColor: t.canvas,
-        paddingTop: 6,
+        borderTopColor: t.line,
+        backgroundColor: t.card,
+        paddingTop: 8,
         paddingBottom: Math.max(10, insets.bottom),
         paddingHorizontal: space.s4,
       }}
@@ -328,10 +344,10 @@ function TabBar() {
           <Pressable
             key={tab.href}
             onPress={() => router.push(tab.href)}
-            style={{ flex: 1, alignItems: 'center', gap: 2, paddingVertical: 4 }}
+            style={{ flex: 1, alignItems: 'center', gap: 3, paddingVertical: 4 }}
           >
-            <Icon size={20} color={active ? t.ink : t.ink4} strokeWidth={1.8} />
-            <Txt size={text.xs} color={active ? t.ink : t.ink4} style={{ fontFamily: font.medium }}>
+            <Icon size={21} color={active ? t.ink : t.ink4} strokeWidth={active ? 2.2 : 1.9} />
+            <Txt size={text.xs} color={active ? t.ink : t.ink4} style={{ fontFamily: font.bold }}>
               {tab.label}
             </Txt>
           </Pressable>
@@ -351,22 +367,22 @@ function Fab({ onPress }: { onPress: () => void }) {
       style={({ pressed }) => ({
         position: 'absolute',
         right: space.s5,
-        bottom: 64 + Math.max(10, insets.bottom),
-        width: 54,
-        height: 54,
-        borderRadius: 27,
+        bottom: 70 + Math.max(10, insets.bottom),
+        width: 56,
+        height: 56,
+        borderRadius: 18,
         backgroundColor: t.ink,
         alignItems: 'center',
         justifyContent: 'center',
         transform: [{ scale: pressed ? 0.94 : 1 }],
         shadowColor: '#000',
-        shadowOpacity: 0.25,
+        shadowOpacity: 0.28,
         shadowRadius: 16,
         shadowOffset: { width: 0, height: 6 },
         elevation: 8,
       })}
     >
-      <IconPlus size={22} color={t.canvas} strokeWidth={2.2} />
+      <IconPlus size={24} color={t.volt} strokeWidth={2.5} />
     </Pressable>
   )
 }

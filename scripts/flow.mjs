@@ -14,7 +14,7 @@ await page.keyboard.press('Enter')
 await page.waitForTimeout(1400)
 
 // 2. Accept the living-room suggestion on the week
-await page.getByText('Add to week', { exact: false }).first().click()
+await page.getByText('Place it', { exact: false }).first().click()
 await page.waitForTimeout(800)
 await page.screenshot({ path: 'scripts/out/flow-week-accepted.png' })
 

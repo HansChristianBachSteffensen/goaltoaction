@@ -65,15 +65,23 @@ product model and two deliberate presentations:
   for contextual intelligence. Every suggestion carries a human-readable
   reason and is only ever applied by an explicit user action.
 - `src/state/store.ts` — Zustand store + pure selectors.
-- `src/theme/` — design tokens (warm neutral canvas, graphite ink, one
-  ember accent; Inter for UI, Fraunces italic for the editorial voice) with
-  a tuned dark palette, not an inversion.
-- `src/ui/` — primitives: text styles, the check control (Reanimated pop +
-  light haptic on completion), rows, meters, buttons, Tabler icons behind
-  product-named wrappers, and the goal artwork as universal `react-native-svg`
-  scenes so imagery ships identically on all platforms.
-- `src/shell/AppShell.tsx` — responsive chrome: restrained sidebar on
-  desktop widths, three thumb-reach tabs + capture button on mobile.
+- `src/theme/` — design tokens for the performance direction: cool
+  near-white canvas, white cards, near-black type, cobalt for decisions
+  and the coach, volt for progress and focus energy; Archivo carries the
+  whole type system (900 display, 800-italic stat numbers, 700 card
+  titles). The dark palette is tuned, not inverted.
+- `src/coach/` — the coach: derived intelligence computed from the user's
+  actual goals, schedule and behavior. Every card carries a reason, one
+  primary move is recommended at a time, and changes only happen through
+  explicit user actions. On wide desktop it is a persistent right-hand
+  panel; on mobile it lives at the top of Today.
+- `src/ui/` — primitives: text styles (including the athletic Stat
+  numeral), the check control (Reanimated pop + light haptic, volt mark on
+  ink), cards, meters, buttons, and Tabler icons behind product-named
+  wrappers.
+- `src/shell/AppShell.tsx` — responsive chrome: compact rail + wide card
+  workspace + persistent coach panel on desktop (≥1240px), three
+  thumb-reach tabs + capture button on mobile.
 - `src/screens/` — each screen adapts its layout per form factor while
   sharing all logic.
 - `src/app/` — Expo Router routes (`/today`, `/week`, `/goals`, `/inbox`,

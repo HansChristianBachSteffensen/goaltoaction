@@ -1,66 +1,77 @@
 /* ————————————————————————————————————————————————
-   North design tokens
-   Warm neutral canvas · graphite ink · one ember accent.
-   Hierarchy through weight and space, not color coding.
+   North design tokens — performance direction
+   Cool light canvas · white cards · near-black type ·
+   cobalt for decision & coach · volt for energy & progress.
+   Hierarchy through scale and weight, cards as the language.
    ———————————————————————————————————————————————— */
 
 export const light = {
-  canvas: '#f6f4ef',
-  surface: '#fffefb',
-  surfaceRaised: '#ffffff',
-  surfaceSunken: '#efece5',
-  surfaceInk: '#201d18',
+  canvas: '#f4f5f7',
+  card: '#ffffff',
+  cardSunken: '#eceef1',
+  dark: '#0b0c0e', // hero / signature surface
+  darkCard: '#141519',
 
-  ink: '#1c1a15',
-  ink2: '#56524a',
-  ink3: '#8b867c',
-  ink4: '#b5afa3',
-  inkOnDark: '#f4f2ec',
-  ink2OnDark: 'rgba(244,242,236,0.64)',
+  ink: '#0b0c0e',
+  ink2: '#4b4f58',
+  ink3: '#8a8f99',
+  ink4: '#c6cad2',
+  inkOnDark: '#f5f6f8',
+  ink2OnDark: 'rgba(245,246,248,0.65)',
+  ink3OnDark: 'rgba(245,246,248,0.4)',
 
-  line: 'rgba(28,26,21,0.10)',
-  lineStrong: 'rgba(28,26,21,0.18)',
-  lineFaint: 'rgba(28,26,21,0.055)',
+  line: 'rgba(11,12,14,0.09)',
+  lineStrong: 'rgba(11,12,14,0.16)',
+  lineFaint: 'rgba(11,12,14,0.05)',
 
-  accent: '#c04f24',
-  accentInk: '#a8431d',
-  accentSoft: 'rgba(192,79,36,0.09)',
-  accentLine: 'rgba(192,79,36,0.28)',
-  accentOnDark: '#e8a878',
-  onAccent: '#fff7f2',
+  accent: '#2743ff', // cobalt — decisions, coach, active
+  accentDeep: '#1d33cc',
+  accentSoft: 'rgba(39,67,255,0.08)',
+  accentLine: 'rgba(39,67,255,0.3)',
+  onAccent: '#ffffff',
 
-  scrim: 'rgba(24,21,16,0.35)',
-}
+  volt: '#d8f238', // energy — progress fills, focus marks, on-dark highlights
+  voltDeep: '#b8d40f',
+  voltSoft: 'rgba(216,242,56,0.18)',
+  onVolt: '#0b0c0e',
 
-export const dark: Palette = {
-  canvas: '#161511',
-  surface: '#1e1c18',
-  surfaceRaised: '#24221d',
-  surfaceSunken: '#121110',
-  surfaceInk: '#26231d',
-
-  ink: '#edeae2',
-  ink2: '#a8a396',
-  ink3: '#7d786d',
-  ink4: '#55524a',
-  inkOnDark: '#f4f2ec',
-  ink2OnDark: 'rgba(244,242,236,0.64)',
-
-  line: 'rgba(237,234,226,0.10)',
-  lineStrong: 'rgba(237,234,226,0.20)',
-  lineFaint: 'rgba(237,234,226,0.05)',
-
-  accent: '#d96b3d',
-  accentInk: '#e07a4e',
-  accentSoft: 'rgba(217,107,61,0.13)',
-  accentLine: 'rgba(217,107,61,0.35)',
-  accentOnDark: '#e8a878',
-  onAccent: '#21130c',
-
-  scrim: 'rgba(0,0,0,0.5)',
+  scrim: 'rgba(11,12,14,0.45)',
 }
 
 export type Palette = typeof light
+
+export const dark: Palette = {
+  canvas: '#0b0c0e',
+  card: '#16171b',
+  cardSunken: '#101114',
+  dark: '#16171b',
+  darkCard: '#1d1e23',
+
+  ink: '#f3f4f6',
+  ink2: '#a6aab3',
+  ink3: '#787d87',
+  ink4: '#3f434b',
+  inkOnDark: '#f5f6f8',
+  ink2OnDark: 'rgba(245,246,248,0.65)',
+  ink3OnDark: 'rgba(245,246,248,0.4)',
+
+  line: 'rgba(243,244,246,0.1)',
+  lineStrong: 'rgba(243,244,246,0.18)',
+  lineFaint: 'rgba(243,244,246,0.06)',
+
+  accent: '#5064ff',
+  accentDeep: '#3a4ee0',
+  accentSoft: 'rgba(80,100,255,0.14)',
+  accentLine: 'rgba(80,100,255,0.4)',
+  onAccent: '#ffffff',
+
+  volt: '#d8f238',
+  voltDeep: '#e4f95c',
+  voltSoft: 'rgba(216,242,56,0.14)',
+  onVolt: '#0b0c0e',
+
+  scrim: 'rgba(0,0,0,0.6)',
+}
 
 /* 4px spatial rhythm */
 export const space = {
@@ -75,36 +86,32 @@ export const space = {
 }
 
 export const radius = {
-  sm: 6,
-  md: 10,
+  sm: 8,
+  md: 12,
   lg: 16,
   full: 999,
 }
 
-/* Type scale (px) */
+/* Type scale (px) — big, confident jumps */
 export const text = {
   xs: 11,
   sm: 13,
   md: 15,
   lg: 18,
   xl: 22,
-  x2: 30,
-  x3: 40,
+  x2: 28,
+  x3: 44,
+  stat: 40,
 }
 
-/* Font families — loaded in the root layout. */
+/* One athletic family, many weights. Loaded in the root layout. */
 export const font = {
-  regular: 'Inter_400Regular',
-  medium: 'Inter_500Medium',
-  semibold: 'Inter_600SemiBold',
-  bold: 'Inter_700Bold',
-  editorial: 'Fraunces_400Regular_Italic',
-}
-
-/* Small-caps section label */
-export const kLabel = {
-  fontFamily: font.semibold,
-  fontSize: text.xs,
-  letterSpacing: 1.1,
-  textTransform: 'uppercase' as const,
+  regular: 'Archivo_400Regular',
+  medium: 'Archivo_500Medium',
+  semibold: 'Archivo_600SemiBold',
+  bold: 'Archivo_700Bold',
+  heavy: 'Archivo_800ExtraBold',
+  black: 'Archivo_900Black',
+  statItalic: 'Archivo_800ExtraBold_Italic',
+  voice: 'Archivo_500Medium_Italic', // the "why" voice — direct, contemporary
 }

@@ -3,6 +3,7 @@ import { font, text, useTheme } from '../theme'
 
 /* Small typed text helpers so screens stay legible. */
 
+/** Uppercase micro-label — bold, tracked, athletic. */
 export function KLabel({
   children,
   color,
@@ -17,9 +18,9 @@ export function KLabel({
     <Text
       style={[
         {
-          fontFamily: font.semibold,
+          fontFamily: font.bold,
           fontSize: text.xs,
-          letterSpacing: 1.1,
+          letterSpacing: 1.3,
           textTransform: 'uppercase',
           color: color ?? t.ink3,
         },
@@ -31,7 +32,7 @@ export function KLabel({
   )
 }
 
-/** Editorial voice — the Why lines. Fraunces italic. */
+/** The "why" voice — direct and contemporary, not decorative. */
 export function Why({
   children,
   color,
@@ -51,10 +52,41 @@ export function Why({
       numberOfLines={numberOfLines}
       style={[
         {
-          fontFamily: font.editorial,
+          fontFamily: font.voice,
           fontSize: size,
-          lineHeight: size * 1.45,
+          lineHeight: size * 1.4,
           color: color ?? t.ink2,
+        },
+        style,
+      ]}
+    >
+      {children}
+    </Text>
+  )
+}
+
+/** Big athletic number — extra-bold italic, NRC-style. */
+export function Stat({
+  children,
+  size = text.stat,
+  color,
+  style,
+}: {
+  children: React.ReactNode
+  size?: number
+  color?: string
+  style?: TextStyle
+}) {
+  const t = useTheme()
+  return (
+    <Text
+      style={[
+        {
+          fontFamily: font.statItalic,
+          fontSize: size,
+          lineHeight: size * 1.02,
+          letterSpacing: -0.5,
+          color: color ?? t.ink,
         },
         style,
       ]}
@@ -84,7 +116,7 @@ export function Txt({
         {
           fontFamily: font[weight],
           fontSize: size,
-          lineHeight: size * 1.4,
+          lineHeight: size * 1.35,
           color: color ?? t.ink,
         },
         style,

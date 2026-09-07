@@ -5,13 +5,16 @@ import { StatusBar } from 'expo-status-bar'
 import * as SplashScreen from 'expo-splash-screen'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
+  Archivo_400Regular,
+  Archivo_500Medium,
+  Archivo_500Medium_Italic,
+  Archivo_600SemiBold,
+  Archivo_700Bold,
+  Archivo_800ExtraBold,
+  Archivo_800ExtraBold_Italic,
+  Archivo_900Black,
   useFonts,
-} from '@expo-google-fonts/inter'
-import { Fraunces_400Regular_Italic } from '@expo-google-fonts/fraunces'
+} from '@expo-google-fonts/archivo'
 import { ThemeProvider, useTheme } from '../theme'
 import { AppShell } from '../shell/AppShell'
 
@@ -31,11 +34,14 @@ function Root() {
 
 export default function Layout() {
   const [loaded] = useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
-    Fraunces_400Regular_Italic,
+    Archivo_400Regular,
+    Archivo_500Medium,
+    Archivo_500Medium_Italic,
+    Archivo_600SemiBold,
+    Archivo_700Bold,
+    Archivo_800ExtraBold,
+    Archivo_800ExtraBold_Italic,
+    Archivo_900Black,
   })
 
   useEffect(() => {

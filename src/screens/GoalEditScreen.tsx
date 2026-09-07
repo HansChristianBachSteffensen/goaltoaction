@@ -145,8 +145,8 @@ export default function GoalEditScreen() {
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <IconSpark size={14} color={t.accentInk} strokeWidth={1.6} />
-                <KLabel color={t.accentInk}>Make it yours</KLabel>
+                <IconSpark size={14} color={t.accentDeep} strokeWidth={1.6} />
+                <KLabel color={t.accentDeep}>Make it yours</KLabel>
               </View>
               <Pressable onPress={() => setAssistDismissed(true)} hitSlop={8}>
                 <IconX size={14} color={t.ink3} />
@@ -168,7 +168,7 @@ export default function GoalEditScreen() {
               <Txt size={text.sm} color={t.ink3}>
                 {assist.evidence.join('  ·  ')}
               </Txt>
-              <Txt size={text.sm} weight="semibold" color={t.accentInk} style={{ marginTop: space.s1 }}>
+              <Txt size={text.sm} weight="semibold" color={t.accentDeep} style={{ marginTop: space.s1 }}>
                 Use this as a starting point
               </Txt>
             </Pressable>
@@ -186,7 +186,7 @@ export default function GoalEditScreen() {
             style={[
               inputBase,
               {
-                fontFamily: font.editorial,
+                fontFamily: font.voice,
                 fontSize: text.lg,
                 lineHeight: text.lg * 1.5,
                 paddingVertical: space.s1,

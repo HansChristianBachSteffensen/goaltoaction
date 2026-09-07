@@ -80,8 +80,8 @@ export function Capture({ onClose }: { onClose: () => void }) {
       >
         {suggestion ? (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
-            <IconSpark size={14} color={t.accentInk} strokeWidth={1.6} />
-            <Txt size={text.sm} color={t.accentInk} numberOfLines={1} style={{ flex: 1 }}>
+            <IconSpark size={14} color={t.accentDeep} strokeWidth={1.6} />
+            <Txt size={text.sm} color={t.accentDeep} numberOfLines={1} style={{ flex: 1 }}>
               Looks like {suggestedGoal ? suggestedGoal.title : areaName(suggestion.areaId)} — sort
               it later
             </Txt>
@@ -116,7 +116,7 @@ export function Capture({ onClose }: { onClose: () => void }) {
             onPress={() => {}}
             style={{
               width: isDesktop ? 560 : '100%',
-              backgroundColor: t.surfaceRaised,
+              backgroundColor: t.card,
               borderTopLeftRadius: radius.lg,
               borderTopRightRadius: radius.lg,
               borderBottomLeftRadius: isDesktop ? radius.lg : 0,

@@ -6,10 +6,10 @@ import { areaName, goalActions, goalById, plannedMinutes, useStore } from '../st
 import type { Action } from '../model/types'
 import { dayShort, formatDuration, formatTime } from '../model/time'
 import { font, radius, space, text, useTheme } from '../theme'
-import { KLabel, Txt, Why } from '../ui/Txt'
-import { Btn } from '../ui/Btn'
-import { ActionRow } from '../ui/Row'
-import { GoalArt, type GoalArtKey } from '../ui/GoalArt'
+import { KLabel, Stat, Txt, Why } from '../ui/Txt'
+import { Card } from '../ui/Card'
+import { Check } from '../ui/Check'
+import { Meter } from '../ui/Meter'
 import { IconArrowLeft, IconFocus, IconPlus, IconRepeat } from '../ui/icons'
 import { useIsDesktop } from '../shell/AppShell'
 
@@ -42,230 +42,246 @@ export default function GoalScreen() {
 
   if (!goal) return null
   const planned = plannedMinutes(state, goal.id)
-
-  const hero = (
-    <View
-      style={{
-        backgroundColor: t.surfaceInk,
-        borderRadius: isDesktop ? radius.lg : 0,
-        overflow: 'hidden',
-        padding: space.s5,
-        paddingTop: isDesktop ? space.s6 : Math.max(space.s6, insets.top) + 76,
-        minHeight: isDesktop ? 260 : undefined,
-        justifyContent: 'flex-end',
-        gap: space.s2,
-      }}
-    >
-      {goal.image && <GoalArt art={goal.image as GoalArtKey} scrim="bottom" />}
-      {!isDesktop && (
-        <Pressable
-          onPress={() => router.back()}
-          accessibilityLabel="Back"
-          style={{
-            position: 'absolute',
-            top: Math.max(space.s4, insets.top),
-            left: space.s4,
-            width: 36,
-            height: 36,
-            borderRadius: 18,
-            backgroundColor: 'rgba(16,14,12,0.45)',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <IconArrowLeft size={18} color={t.inkOnDark} />
-        </Pressable>
-      )}
-      <Pressable onPress={() => router.push(`/area/${goal.areaId}`)}>
-        <KLabel color="rgba(244,242,236,0.55)">{areaName(goal.areaId)}</KLabel>
-      </Pressable>
-      <Txt
-        size={isDesktop ? text.x2 : 26}
-        weight="bold"
-        color={t.inkOnDark}
-        style={{ letterSpacing: -0.7, lineHeight: (isDesktop ? text.x2 : 26) * 1.12, maxWidth: 560 }}
-      >
-        {goal.title}
-      </Txt>
-      {goal.why && (
-        <Why size={isDesktop ? text.lg : text.md} color={t.ink2OnDark} style={{ maxWidth: 480 }}>
-          {goal.why}
-        </Why>
-      )}
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'flex-end',
-          justifyContent: 'space-between',
-          gap: space.s4,
-          marginTop: space.s3,
-          flexWrap: 'wrap',
-        }}
-      >
-        {goal.evidence && goal.evidence.length > 0 ? (
-          <View style={{ gap: space.s2 }}>
-            <KLabel color="rgba(244,242,236,0.45)">How I’ll know</KLabel>
-            <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
-              {goal.evidence.map((e) => (
-                <View
-                  key={e}
-                  style={{
-                    borderWidth: 1,
-                    borderColor: 'rgba(244,242,236,0.25)',
-                    borderRadius: radius.full,
-                    paddingVertical: 3,
-                    paddingHorizontal: 10,
-                  }}
-                >
-                  <Txt size={text.xs} weight="medium" color="rgba(244,242,236,0.85)">
-                    {e}
-                  </Txt>
-                </View>
-              ))}
-            </View>
-          </View>
-        ) : (
-          <View />
-        )}
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s2 }}>
-          {goal.focus ? (
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <IconFocus size={13} color={t.accentOnDark} strokeWidth={2} />
-              <Txt size={text.xs} weight="semibold" color={t.accentOnDark}>
-                In focus · {formatDuration(planned)} of ~{goal.hoursPerWeek}h this week
-              </Txt>
-            </View>
-          ) : (
-            <Pressable
-              onPress={() => router.push('/focus')}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 6,
-                borderWidth: 1,
-                borderColor: 'rgba(244,242,236,0.3)',
-                borderRadius: radius.full,
-                paddingVertical: 6,
-                paddingHorizontal: 13,
-              }}
-            >
-              <IconFocus size={13} color="rgba(244,242,236,0.8)" strokeWidth={2} />
-              <Txt size={text.sm} weight="medium" color="rgba(244,242,236,0.8)">
-                Give it focus
-              </Txt>
-            </Pressable>
-          )}
-          <Pressable
-            onPress={() => router.push({ pathname: '/goal-new', params: { goalId: goal.id } })}
-            hitSlop={6}
-            style={{ paddingVertical: 6, paddingHorizontal: 10 }}
-          >
-            <Txt size={text.sm} weight="medium" color="rgba(244,242,236,0.55)">
-              Edit
-            </Txt>
-          </Pressable>
-        </View>
-      </View>
-    </View>
-  )
+  const intent = (goal.hoursPerWeek ?? 0) * 60
 
   return (
     <ScrollView
       contentContainerStyle={{
-        padding: isDesktop ? space.s6 : 0,
-        paddingTop: isDesktop ? space.s6 : 0,
-        paddingBottom: 120,
-        maxWidth: isDesktop ? 860 : undefined,
-        width: '100%',
+        padding: isDesktop ? space.s6 : space.s4,
+        paddingTop: isDesktop ? space.s6 : Math.max(space.s5, insets.top + space.s2),
+        paddingBottom: 130,
       }}
     >
-      {hero}
-      <View
-        style={{
-          gap: space.s6,
-          paddingTop: space.s6,
-          paddingHorizontal: isDesktop ? 0 : space.s5,
-          maxWidth: isDesktop ? 640 : undefined,
-        }}
-      >
-        {scheduled.length > 0 && (
-          <Section label="This week">
-            {scheduled.map((a) => (
-              <ActionRow
-                key={a.id}
-                action={a}
-                big={!isDesktop}
-                when={`${dayShort(a.day!)}${a.time ? ` ${formatTime(a.time)}` : ''}`}
-                onToggle={() => toggleDone(a.id)}
-              />
-            ))}
-          </Section>
-        )}
-        {next.length > 0 && (
-          <Section label="Up next">
-            {next.map((a) => (
-              <ActionRow
-                key={a.id}
-                action={a}
-                big={!isDesktop}
-                when={isDesktop ? '—' : undefined}
-                onToggle={() => toggleDone(a.id)}
-              />
-            ))}
-          </Section>
-        )}
-        {rhythms.length > 0 && (
-          <Section label="Rhythms">
-            {rhythms.map((a) => (
-              <View
-                key={a.id}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: space.s3,
-                  paddingVertical: isDesktop ? 10 : 13,
-                  paddingHorizontal: isDesktop ? space.s2 : 0,
-                  borderBottomWidth: 1,
-                  borderBottomColor: t.lineFaint,
-                }}
-              >
-                <View style={{ width: isDesktop ? 20 : 24, alignItems: 'center' }}>
-                  <IconRepeat size={13} color={t.ink4} strokeWidth={1.8} />
-                </View>
-                <Txt weight="medium" style={{ flex: 1 }}>
-                  {a.title}
-                </Txt>
-                <Txt size={text.sm} color={t.ink3}>
-                  {a.rhythm}
-                </Txt>
+      <View style={{ width: '100%', maxWidth: 1100, alignSelf: 'center', gap: space.s4 }}>
+        <Card dark pad={isDesktop ? space.s6 : space.s5} style={{ gap: space.s3 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s3 }}>
+            {!isDesktop && (
+              <Pressable onPress={() => router.back()} hitSlop={8} accessibilityLabel="Back">
+                <IconArrowLeft size={19} color={t.inkOnDark} strokeWidth={2.2} />
+              </Pressable>
+            )}
+            <Pressable onPress={() => router.push(`/area/${goal.areaId}`)}>
+              <KLabel color={t.ink3OnDark}>{areaName(goal.areaId)}</KLabel>
+            </Pressable>
+            {goal.focus && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginLeft: 'auto' }}>
+                <IconFocus size={13} color={t.volt} strokeWidth={2.2} />
+                <KLabel color={t.volt}>In focus</KLabel>
               </View>
-            ))}
-          </Section>
-        )}
-        {done.length > 0 && (
-          <Section label="Done this week">
-            {done.map((a) => (
-              <ActionRow
-                key={a.id}
-                action={a}
-                big={!isDesktop}
-                when={a.day ? dayShort(a.day) : ''}
-                onToggle={() => toggleDone(a.id)}
-              />
-            ))}
-          </Section>
-        )}
-        <AddActionInline goalId={goal.id} areaId={goal.areaId} />
+            )}
+          </View>
+          <Txt
+            size={isDesktop ? 40 : 28}
+            weight="black"
+            color={t.inkOnDark}
+            style={{ letterSpacing: -1.2, lineHeight: (isDesktop ? 40 : 28) * 1.1, maxWidth: 640 }}
+          >
+            {goal.title}
+          </Txt>
+          {goal.why && (
+            <Why size={text.md} color={t.ink2OnDark} style={{ maxWidth: 520 }}>
+              {goal.why}
+            </Why>
+          )}
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'flex-end',
+              gap: space.s5,
+              marginTop: space.s2,
+              flexWrap: 'wrap',
+            }}
+          >
+            {goal.evidence && goal.evidence.length > 0 && (
+              <View style={{ gap: space.s2, flex: 1, minWidth: 220 }}>
+                <KLabel color={t.ink3OnDark}>How I’ll know</KLabel>
+                <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
+                  {goal.evidence.map((e) => (
+                    <View
+                      key={e}
+                      style={{
+                        borderWidth: 1,
+                        borderColor: 'rgba(245,246,248,0.25)',
+                        borderRadius: radius.sm - 2,
+                        paddingVertical: 4,
+                        paddingHorizontal: 9,
+                      }}
+                    >
+                      <Txt size={text.xs} weight="bold" color={t.ink2OnDark}>
+                        {e}
+                      </Txt>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+            {goal.focus && intent > 0 && (
+              <View style={{ gap: 6, minWidth: 220 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6 }}>
+                  <Stat size={30} color={t.volt}>
+                    {formatDuration(planned)}
+                  </Stat>
+                  <Txt size={text.sm} weight="bold" color={t.ink2OnDark}>
+                    / ~{goal.hoursPerWeek}h this week
+                  </Txt>
+                </View>
+                <Meter ratio={planned / intent} onDark />
+              </View>
+            )}
+            <View style={{ flexDirection: 'row', gap: space.s2, marginLeft: 'auto' }}>
+              {!goal.focus && (
+                <Pressable
+                  onPress={() => router.push('/focus')}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 6,
+                    borderWidth: 1.5,
+                    borderColor: 'rgba(245,246,248,0.3)',
+                    borderRadius: radius.sm + 2,
+                    paddingVertical: 8,
+                    paddingHorizontal: 14,
+                  }}
+                >
+                  <IconFocus size={14} color={t.inkOnDark} strokeWidth={2.2} />
+                  <Txt size={text.sm} weight="bold" color={t.inkOnDark}>
+                    Give it focus
+                  </Txt>
+                </Pressable>
+              )}
+              <Pressable
+                onPress={() => router.push({ pathname: '/goal-new', params: { goalId: goal.id } })}
+                style={{ paddingVertical: 8, paddingHorizontal: 10 }}
+              >
+                <Txt size={text.sm} weight="bold" color={t.ink3OnDark}>
+                  Edit
+                </Txt>
+              </Pressable>
+            </View>
+          </View>
+        </Card>
+
+        <View style={{ flexDirection: 'row', gap: space.s4, flexWrap: 'wrap' }}>
+          <Card style={{ flex: 1.4, minWidth: 320, gap: space.s2 }}>
+            <KLabel>This week</KLabel>
+            {scheduled.length === 0 ? (
+              <Txt size={text.md} weight="medium" color={t.ink3}>
+                Nothing scheduled yet.
+              </Txt>
+            ) : (
+              <View>
+                {scheduled.map((a, i) => (
+                  <GoalRow
+                    key={a.id}
+                    action={a}
+                    first={i === 0}
+                    when={`${dayShort(a.day!)}${a.time ? ` ${formatTime(a.time)}` : ''}`}
+                    onToggle={() => toggleDone(a.id)}
+                  />
+                ))}
+              </View>
+            )}
+            {done.length > 0 && (
+              <>
+                <KLabel style={{ marginTop: space.s3 }}>Done</KLabel>
+                <View>
+                  {done.map((a, i) => (
+                    <GoalRow
+                      key={a.id}
+                      action={a}
+                      first={i === 0}
+                      when={a.day ? dayShort(a.day) : ''}
+                      onToggle={() => toggleDone(a.id)}
+                    />
+                  ))}
+                </View>
+              </>
+            )}
+          </Card>
+
+          <View style={{ flex: 1, minWidth: 280, gap: space.s4 }}>
+            <Card style={{ gap: space.s2 }}>
+              <KLabel>Up next</KLabel>
+              {next.length === 0 ? (
+                <Txt size={text.md} weight="medium" color={t.ink3}>
+                  No unscheduled actions.
+                </Txt>
+              ) : (
+                <View>
+                  {next.map((a, i) => (
+                    <GoalRow key={a.id} action={a} first={i === 0} onToggle={() => toggleDone(a.id)} />
+                  ))}
+                </View>
+              )}
+              <AddActionInline goalId={goal.id} areaId={goal.areaId} />
+            </Card>
+            {rhythms.length > 0 && (
+              <Card sunken style={{ gap: space.s3 }}>
+                <KLabel>Rhythms</KLabel>
+                {rhythms.map((a) => (
+                  <View key={a.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <IconRepeat size={14} color={t.ink3} strokeWidth={2.2} />
+                    <Txt size={text.sm} weight="bold" style={{ flex: 1 }}>
+                      {a.title}
+                    </Txt>
+                    <Txt size={text.xs} weight="bold" color={t.ink3}>
+                      {a.rhythm}
+                    </Txt>
+                  </View>
+                ))}
+              </Card>
+            )}
+          </View>
+        </View>
       </View>
     </ScrollView>
   )
 }
 
-function Section({ label, children }: { label: string; children: React.ReactNode }) {
+function GoalRow({
+  action,
+  onToggle,
+  when,
+  first,
+}: {
+  action: Action
+  onToggle: () => void
+  when?: string
+  first?: boolean
+}) {
+  const t = useTheme()
+  const done = action.status === 'done'
   return (
-    <View style={{ gap: space.s2 }}>
-      <KLabel>{label}</KLabel>
-      <View>{children}</View>
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: space.s3,
+        paddingVertical: 11,
+        borderTopWidth: first ? 0 : 1,
+        borderTopColor: t.lineFaint,
+      }}
+    >
+      <Check done={done} onToggle={onToggle} size={22} />
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <Txt
+          size={text.md}
+          weight="bold"
+          numberOfLines={1}
+          color={done ? t.ink3 : t.ink}
+          style={done ? { textDecorationLine: 'line-through' } : undefined}
+        >
+          {action.title}
+        </Txt>
+        {action.note && (
+          <Txt size={text.sm} color={t.ink4} numberOfLines={1}>
+            {action.note}
+          </Txt>
+        )}
+      </View>
+      <Txt size={text.sm} weight="semibold" color={t.ink4} style={{ fontVariant: ['tabular-nums'] }}>
+        {when ?? (action.duration ? formatDuration(action.duration) : '')}
+      </Txt>
     </View>
   )
 }
@@ -281,16 +297,8 @@ export function AddActionInline({
   const addAction = useStore((s) => s.addAction)
   const [value, setValue] = useState('')
   return (
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: space.s3,
-        paddingVertical: space.s2,
-        paddingHorizontal: space.s2,
-      }}
-    >
-      <IconPlus size={14} color={t.ink4} />
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s3, paddingVertical: space.s2 }}>
+      <IconPlus size={15} color={t.accent} strokeWidth={2.5} />
       <TextInput
         placeholder="Add an action…"
         placeholderTextColor={t.ink4}
@@ -304,7 +312,7 @@ export function AddActionInline({
         }}
         style={{
           flex: 1,
-          fontFamily: font.regular,
+          fontFamily: font.medium,
           fontSize: text.md,
           color: t.ink,
           paddingVertical: 4,
