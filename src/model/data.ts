@@ -18,7 +18,7 @@ export const GOALS: Goal[] = [
     evidence: ['15% body fat', '10 strict pull-ups', '3.0 W/kg'],
     focus: true,
     hoursPerWeek: 6,
-    image: '/img/goal-body.svg',
+    image: 'body',
   },
   {
     id: 'g-business',
@@ -28,7 +28,7 @@ export const GOALS: Goal[] = [
     evidence: ['€10k MRR', 'Five paying customers'],
     focus: true,
     hoursPerWeek: 5,
-    image: '/img/goal-business.svg',
+    image: 'business',
   },
   {
     id: 'g-livingroom',
@@ -38,7 +38,7 @@ export const GOALS: Goal[] = [
     evidence: ['Finished before Christmas'],
     focus: true,
     hoursPerWeek: 2,
-    image: '/img/goal-livingroom.svg',
+    image: 'livingroom',
   },
   {
     id: 'g-kids',
@@ -46,7 +46,7 @@ export const GOALS: Goal[] = [
     title: 'Be someone my kids want to talk to',
     why: "They're only this age once.",
     focus: false,
-    image: '/img/goal-family.svg',
+    image: 'family',
   },
 ]
 
